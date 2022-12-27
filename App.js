@@ -1,20 +1,39 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from 'react'
+import { NavigationContainer } from "@react-navigation/native"
+import RootApp from './RootApp'
+import { PermissionsAndroid } from "react-native"
+import usePermission from "./src/hooks/usePermission"
+//STACKS
 
-export default function App() {
+
+const App = () => {
+
+
+  // usePermission()
+  const requestPermission = async () => {
+    /* FIXME : Runtime Permission is automatically genarated without any explicit Permission Request  */
+    try {
+      await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+      ]);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  useEffect(() => {
+    requestPermission();
+  }, []);
+
+
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+    <NavigationContainer>
+      <RootApp />
+    </NavigationContainer>
+  )
+
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App

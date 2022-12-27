@@ -18,16 +18,32 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationAlwaysUsageDescription": "Your app uses location services all the time",
+        "NSLocationWhenInUseUsageDescription": "Your app uses location services only when the app is running",
+        "NSBluetoothPeripheralUsageDescription": "Your app works with Bluetooth devices"
+      },
+      "bundleIdentifier": "com.smsk"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.smsk"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+     
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b5d10597-2e47-41d1-8a01-9b1cacdba859"
+      }
+    },
+    "owner": "guna.n"
   }
 }
