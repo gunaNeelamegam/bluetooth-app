@@ -9,45 +9,10 @@ const HomeScreen = ({ navigation }) => {
   const [state, setState] = useState("");
   useLocationEnabler()
 
-  const _getLocationPermission = useCallback(async () => {
-    if (Platform.OS !== "android" && Platform.Version < 23) {
-      return true;
-    }
-
-    try {
-      let isGranted = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-      );
-      if (isGranted) return;
-
-      isGranted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        {
-          title: "Location access!",
-          message: "Allow MedUKlick to access device's location?",
-          buttonNeutral: "Ask Me Later",
-          buttonNegative: "Cancel",
-          buttonPositive: "OK",
-        }
-      );
-
-      if (isGranted !== PermissionsAndroid.RESULTS.GRANTED) {
-        alert("Location permission denied");
-        return false;
-      } else {
-        return true;
-      }
-    } catch (err) {
-      console.log("Error getting location permission:", err);
-      return false;
-    }
-  })
-
 
   useEffect(() => {
     (async () => {
       await PillSync.init()
-      await _getLocationPermission()
     })()
 
     return () => {
@@ -56,7 +21,7 @@ const HomeScreen = ({ navigation }) => {
   }, [])
 
   const moveNext = async () => {
-    PillSync._registeredDevices.size > 0
+    PillSync._registeredDevices.size >= 2
       ? navigation.navigate("Command") :
       alert(`${PillSync._registeredDevices.size} devices are  connected `)
   }
@@ -102,11 +67,6 @@ const HomeScreen = ({ navigation }) => {
               <Text className="font-semibold text-2xl  text-white">Next</Text>
             </TouchableOpacity>
           </View>
-
-
-
-
-
         </ImageBackground>
 
       </View>

@@ -31,7 +31,7 @@ const Model = ({ modalVisible, setModalVisible, state }) => {
         let data = await AsyncStorage.getItem("devset")
         console.log(data);
       }
-      const regex = /\S\d/g
+      const regex = /\S\d/gi
       setMessage("")
       console.log(regex.test(devSet), devSet?.length, devSet);
       if (devSet && devSet?.length === 5 && regex.test(devSet)) {
@@ -39,15 +39,20 @@ const Model = ({ modalVisible, setModalVisible, state }) => {
         Keyboard.dismiss()
         await PillSync.getNearbyDevices({
           devSet,
-          state
+          state,
+          setIsConnected,
+          setMessage
         })
         setTimeout(() => {
-          setIsConnected(text => !text)
-          if (PillSync._connected)
-            setModalVisible(isConnected)
-          else
-            setMessage("Device  not found")
-        }, 5000)
+          if (isConnected) {
+            console.log(isConnected);
+            setModalVisible(!isConnected)
+          }
+          else if (isConnected)
+            setTimeout(() => {
+              setMessage("Device  not found")
+            }, 2000)
+        }, 1000)
         return
       } else {
         Alert.alert("All Fieild's are Required ", "Dev set must  be maximum 5 digit's")
@@ -62,8 +67,8 @@ const Model = ({ modalVisible, setModalVisible, state }) => {
 
   const disconnectAllDevices = () => {
     try {
-
       PillSync.disconnectAllDevices()
+      setMessage("")
     } catch (err) {
       console.log(err.message);
     }
@@ -107,7 +112,11 @@ const Model = ({ modalVisible, setModalVisible, state }) => {
             )}
           </View>
           <View className="flex-1 mt-2  text-black font-semibold">
-            <Text className="text-yellow-300 font-semibold">{message}</Text>
+            <Text
+              style={{
+                color: message === "Connected Successfully" ? "green" : "yellow"
+              }}
+              className=" text-yellow-300 font-semibold">{message}</Text>
           </View>
           <View className="flex-1 flex-row justify-evenly space-x-10 absolute bottom-4">
             <TouchableOpacity

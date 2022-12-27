@@ -9,23 +9,8 @@ import usePermission from "./src/hooks/usePermission"
 const App = () => {
 
 
-  // usePermission()
-  const requestPermission = async () => {
-    /* FIXME : Runtime Permission is automatically genarated without any explicit Permission Request  */
-    try {
-      await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-      ]);
-    } catch (error) {
-      console.log(error.message);
-    }
-  };
-
-  useEffect(() => {
-    requestPermission();
-  }, []);
-
+  usePermission()
+  
 
 
   return (

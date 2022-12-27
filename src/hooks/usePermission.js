@@ -31,7 +31,7 @@ const usePermission = () => {
                 ${reponseLocationWhenInUse}
                 ${repsonseBlePeripheral}
                 `);
-            } else if ((Platform.OS === "android"
+            } else if ((Platform.OS === "android" && Platform.Version >= 31
                 && locationAndroidResponse
                 && locationAndroidScanResponse
                 && locationAndroidConnectResponse)) {

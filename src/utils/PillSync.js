@@ -3,6 +3,7 @@ import {
     NativeModules,
     NativeEventEmitter,
     Platform,
+    ToastAndroid,
   } from "react-native";
   import BleManager from "react-native-ble-manager";
   
@@ -11,16 +12,13 @@ import {
   const READ_CHAR_UUID = '00001bb1-0000-1000-8000-00805f9b34fb';
 
  
-  // var writeCharacteristic = '00001bb1-0000-1000-8000-00805f9b34fb'; //aa -> cmd
-// var readCharacteristic = '00001aa1-0000-1000-8000-00805f9b34fb'; //bb - response
-  
+
+
   const BleManagerModule = NativeModules.BleManager;
   const BleManagerEmitter = new NativeEventEmitter(BleManagerModule);
-  //SICE_L22222_80C955C2B38D
-  // SICE_L22222_80C955C2B33B
+
   const PillSync = new (class {
     constructor() {
-      console.log("SMSK  class instantiated");
       this._initialized = false;
       this._connected = false;
       this._isConnecting = false;
@@ -30,7 +28,7 @@ import {
       this.connectedDevices=[];
       this.peripherals={};
       this.registeredDevices=[]
-      this.isCreatingBond=false;
+      this.isCreatingBond=true;
       this._registeredDevices = new Map();
       this.peripheralId = false;
       this._subscriptions = [
@@ -51,7 +49,7 @@ import {
           this._hdlDisconnect.bind(this)
         ),
         BleManagerEmitter.addListener('BleManagerDidUpdateValueForCharacteristic', (data)=>{
-          console.log("DATA RECIVED : ",data)
+          console.log("DATA RECIVED : ",data.value)
         }),
         BleManagerEmitter.addListener("BleManagerDidUpdateState", async(args) => {
           console.log("BLE STATE : ",args);
@@ -64,11 +62,19 @@ import {
           "BleManagerDidUpdateValueForCharacteristic",
           ({ value, peripheral, characteristic, service }) => {
             const data = bytesToString(value);
-            console.log(`Received ${data} for characteristic ${characteristic}`);
+           ToastAndroid.showWithGravity(data,ToastAndroid.LONG,ToastAndroid.CENTER)
           }
         )
 
       ];
+    }
+
+   async getAllConnectedDevices(callBack=null){
+    await  BleManager.getConnectedPeripherals([SERVICE_UUID]).then((result) => {
+      callBack(result)
+      }).catch((err) => {
+        console.log(err.message);
+      });
     }
   
      retrieveConnected = (results) => {
@@ -102,12 +108,11 @@ import {
 
      writeInBytes = async (data)=>{
       try {
-        // if(this._registeredDevices.size == 2){
           this._registeredDevices.forEach(async(peripheral,peripheralId)=>{
             let  dataBytes=stringToBytes(data) 
               console.log("DATA IN BYTES : ",dataBytes);
-               
-                BleManager.write(
+              this._connectAndRetrieve(peripheralId)
+                BleManager.writeWithoutResponse(
                  peripheralId ,
                  SERVICE_UUID,
                  WRITE_CHAR_UUID,
@@ -122,9 +127,6 @@ import {
                .catch(error=>{
                  console.log(error.message);
                })
-         // }else{
-         //   console.log("above 1 or below one diveces is connected ");
-         // }
       } catch (error) {
         console.log(error.message);
       }
@@ -177,6 +179,9 @@ import {
     _hdlDisconnect(id) {
       this.peripheralId = false;
       this._connected = false;
+      console.log(typeof id);
+     delete this._registeredDevices[`${id}`]
+     console.log(this._registeredDevices);
       console.log(id, "disconnected");
     }
   
@@ -232,8 +237,8 @@ import {
     async _hdlConnect(args) {
       this._isConnecting = false;
       this._connected = true;
-     await BleManager.stopScan()
-  
+      this.dataSet.setMessage("Connected Successfully")
+      this.dataSet.setIsConnected(false)
       console.log("Connected to peripheral:", args);
     }
   
@@ -263,22 +268,7 @@ import {
   
 
      _connectAndRetrieve=async(id) =>{
-        if(Platform.OS !== "ios" ){
-              try {
-                await BleManager.stopScan()
-                console.log("Inside Creation bond",id);
-               setTimeout(async()=>{
-                await BleManager.createBond(id).then(res=>{
-                  console.log("Bond creation successfully with "+id);
-                }).catch(error=>{
-                  console.log(error.message);
-                })
-               },1000)
-              } catch (error) {
-                console.log(error);
-                return false
-              }
-          
+        
       try {
         await BleManager.connect(id);
       } catch (err) {
@@ -294,7 +284,6 @@ import {
       }
       return true;
     }
-     }
      _disconnectDev=async(id)=> {
       try {
         await BleManager.disconnect(id);
@@ -305,13 +294,7 @@ import {
       }
     }
   
-    readAdvertisementData(serviceData) {
-      if (serviceData) {
-        return serviceData.slice(0, 2);
-      } else {
-        return 0;
-      }
-    }
+  
 
 
    setUpBleNotification = (id) => {
@@ -333,43 +316,8 @@ import {
   }
 
 
-    async readData(id) {
-      if (!this._initialized) return;
-  
-      if (!this._isConnecting) {
-        this._isConnecting = true;
-      } else {
-        console.log("connection in progress...........");
-      }
-  
-      try {
-        let success = await this._connectAndRetrieve(id);
-        if (!success) return;
-        this._readState()
-      } catch (err) {
-        return;
-      }
-  
-      await this._disconnectDev(id);
-    }
-  
-    async _readState(id) {
-      let dataBytes;
-      while (true) {
-        try {
-          dataBytes = await BleManager.read(
-            id,
-            SERVICE_UUID,
-            READ_CHAR_UUID
-          );
-        } catch (err) {
-          console.log("Reading  failed:", err);
-          break;
-        }
-
-      }
-    }
-
+   
+   
     async removeAllListeners() {
       console.log("Removing all Listener's");
      BleManagerEmitter.removeAllListeners("BleManagerStopScan")
