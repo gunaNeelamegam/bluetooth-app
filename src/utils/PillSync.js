@@ -7,9 +7,7 @@ import {
   } from "react-native";
   import BleManager from "react-native-ble-manager";
   
-  const SERVICE_UUID = '0000aabb-0000-1000-8000-075c20ced1ce';
-  const WRITE_CHAR_UUID = '00001aa1-0000-1000-8000-00805f9b34fb';;
-  const READ_CHAR_UUID = '00001bb1-0000-1000-8000-00805f9b34fb';
+
 
  
 
